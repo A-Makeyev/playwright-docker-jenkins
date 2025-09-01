@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user root'
+            args '--ipc=host --user root'  // Keep root for now, but we'll fix permissions
             reuseNode true
         }
     }
@@ -25,6 +25,8 @@ pipeline {
                     bun --version
                     bun install
                     bunx playwright install --with-deps
+                    # Fix permissions for the workspace
+                    chmod -R u+rwX "${WORKSPACE}"
                 '''
             }
         }
