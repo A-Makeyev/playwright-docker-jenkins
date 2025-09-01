@@ -22,7 +22,7 @@ pipeline {
                     apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    bun --version || { echo "Bun not found"; exit 1; }
+                    bun --version
                     bun install
                     bunx playwright install --with-deps
                 '''
@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test
+                    bunx playwright test --reporter=line, allure-playwright, junit
                 '''
             }
         }
@@ -45,7 +45,7 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
                     export PATH=$JAVA_HOME/bin:$PATH
-                    bun report:generate || true
+                    bunx allure generate allure-results --clean -o allure-report || true
                 '''
             }
         }
@@ -55,7 +55,6 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            allure includeProperties: results: [[path: 'build/allure-results']]
         }
         cleanup {
             cleanWs()
