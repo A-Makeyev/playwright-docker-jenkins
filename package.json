@@ -1,41 +1,18 @@
 {
-  "name": "playwright-jenkins-tests",
-  "version": "1.0.0",
-  "description": "Playwright tests with Jenkins integration",
-  "main": "index.js",
   "dependencies": {},
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.3.0",
     "allure-commandline": "^2.34.1",
-    "allure-playwright": "^3.3.3",
-    "typescript": "^5.0.0"
+    "allure-playwright": "^3.3.3"
   },
-  "scripts": {
+    "scripts": {
     "test": "npx playwright test",
-    "test:headed": "npx playwright test --headed",
-    "test:ui": "npx playwright test --ui",
-    "test:debug": "npx playwright test --debug",
     "ui-test": "npx playwright test tests/ui",
     "api-test": "npx playwright test tests/api",
     "test-chrome": "npx playwright test --project=chromium",
-    "test-firefox": "npx playwright test --project=firefox",
-    "test-webkit": "npx playwright test --project=webkit",
-    "test-mobile": "npx playwright test --project='Mobile Chrome' --project='Mobile Safari'",
     "report:generate": "npx allure generate allure-results --clean -o allure-report",
-    "report:open": "npx allure open allure-report",
-    "report:serve": "npx allure serve allure-results",
-    "clean": "rm -rf allure-results allure-report junit-results test-results",
-    "install:browsers": "npx playwright install --with-deps",
-    "show-report": "npx playwright show-report"
-  },
-  "keywords": [
-    "playwright",
-    "testing",
-    "jenkins",
-    "allure",
-    "junit"
-  ],
-  "author": "",
-  "license": "MIT"
+    "report:open": "npx allure open allure-report"
+  }
 }
+
