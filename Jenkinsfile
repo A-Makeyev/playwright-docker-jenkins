@@ -12,6 +12,8 @@ pipeline {
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
         PATH = "${BUN_INSTALL}/bin:${PATH}"
+        JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
+        PATH = "${JAVA_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -35,6 +37,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
+                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
                     bunx playwright test
                 '''
             }
@@ -44,9 +47,7 @@ pipeline {
             steps {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                    export PATH=$JAVA_HOME/bin:$PATH
-                    bun --version
+                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
                     bun report:generate || true
                 '''
             }
@@ -55,8 +56,13 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+            // Archive HTML report so you can download
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            // Publish Allure report in Jenkins UI (requires Allure Jenkins Plugin)
+            allure includeProperties: false, 
+                   jdk: '', 
+                   results: [[path: 'allure-results']]
+            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
         }
         cleanup {
             cleanWs()
