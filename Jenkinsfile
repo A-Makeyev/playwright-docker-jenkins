@@ -1,58 +1,52 @@
 pipeline {
     agent {
-        // Specify a Docker agent using an official Playwright image that includes browsers and Node.js
-        // Choose a tag that corresponds to your Playwright version
         docker {
-            image 'mcr.microsoft.com/playwright:v1.49.1' // Example version; replace with your version
+            image 'mcr.microsoft.com/playwright:v1.55.0-jammy'  // official Playwright Docker image
+            args '-u root'  // run as root so we can install dependencies
         }
     }
 
+    environment {
+        CI = 'true'
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Install') {
             steps {
-                checkout scm
+                sh 'npm ci'
             }
         }
 
-        stage('Install Dependencies with Bun') {
+        stage('Test') {
             steps {
-                // Installs project dependencies using Bun
-                sh 'bun install --frozen-lockfile'
+                // Run Playwright tests with JUnit + Allure
+                sh 'npx playwright test --reporter=line,junit,allure-playwright'
             }
-        }
-
-        stage('Run Playwright Tests with Bun') {
-            steps {
-                script {
-                    // Use 'catchError' to ensure report generation continues even if tests fail
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        // Use bunx to run Playwright tests
-                        sh 'bunx playwright test'
-                    }
+            post {
+                always {
+                    // Archive raw results
+                    junit 'playwright-report/results.xml'
+                    archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
                 }
             }
         }
 
-        stage('Publish Reports') {
+        stage('Allure Report') {
             steps {
-                // Publish JUnit report
-                junit 'junit-report.xml'
-
-                // Generate and publish Allure report
-                allure([
-                    includeProperties: false,
-                    reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'allure-results']],
-                ])
+                // Generate allure report
+                sh 'npx allure generate allure-results --clean -o allure-report || true'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+                }
             }
         }
     }
 
     post {
         always {
-            echo "Build finished. Archiving reports."
-            archiveArtifacts artifacts: 'allure-report/**', fingerprint: true
-            archiveArtifacts artifacts: 'junit-report.xml', fingerprint: true
+            echo "Pipeline finished. Reports generated."
         }
     }
 }
