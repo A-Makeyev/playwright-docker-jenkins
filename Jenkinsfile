@@ -48,6 +48,8 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+                    export PATH=$JAVA_HOME/bin:$PATH
+                    bun --version
                     bun report:generate || true
                 '''
             }
@@ -56,12 +58,11 @@ pipeline {
 
     post {
         always {
-            // Archive HTML report so you can download
+            // Archive HTML for download
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            // Publish Allure report in Jenkins UI (requires Allure Jenkins Plugin)
-            allure includeProperties: false, 
-                   jdk: '', 
-                   results: [[path: 'allure-results']]
+            // Publish Allure report in Jenkins UI
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            // Publish test results for JUnit tab
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
         }
         cleanup {
