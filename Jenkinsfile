@@ -18,13 +18,15 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
+                    echo "Starting setup stage..."
                     apt-get update
-                    apt-get install -y curl unzip openjdk-21-jdk
+                    apt-get install -y curl unzip
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bun install
-                    bunx playwright install --with-deps
+                    npx playwright install --with-deps
+                    echo "Setup completed."
                 '''
             }
         }
@@ -32,9 +34,12 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
+                    echo "Starting test stage..."
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test
+                    # Run Playwright tests using Node
+                    npx playwright test
+                    echo "Tests completed."
                 '''
             }
         }
@@ -42,10 +47,11 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
+                    echo "Starting report stage..."
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                    export PATH=$JAVA_HOME/bin:$PATH
+                    bun --version || { echo "Bun not found"; exit 1; }
                     bun report:generate || true
+                    echo "Report generation completed."
                 '''
             }
         }
