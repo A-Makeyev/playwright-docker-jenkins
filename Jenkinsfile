@@ -18,7 +18,6 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    echo "Starting setup stage..."
                     apt-get update
                     apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
@@ -46,20 +45,28 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
                     export PATH=$JAVA_HOME/bin:$PATH
-                    bun --version
                     bun report:generate || true
                 '''
+            }
+            
+            post {
+                always {
+                    allure includeProperties:
+                     false,
+                     jdk: '',
+                     results: [[path: 'build/allure-results']]
+                }
             }
         }
     }
 
-    post {
-        always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-        }
-        cleanup {
-            cleanWs()
-        }
-    }
+    // post {
+    //     always {
+    //         junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+    //         archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+    //     }
+    //     cleanup {
+    //         cleanWs()
+    //     }
+    // }
 }
