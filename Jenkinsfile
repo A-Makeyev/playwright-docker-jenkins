@@ -35,7 +35,9 @@ pipeline {
             steps {
                 sh '''
                     echo "Starting test stage..."
-                    # Run Playwright tests with Node, NOT Bun
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    # Run Playwright tests using Node
                     npx playwright test
                     echo "Tests completed."
                 '''
