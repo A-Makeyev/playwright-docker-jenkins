@@ -12,7 +12,6 @@ pipeline {
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
         PATH = "${BUN_INSTALL}/bin:${PATH}"
-        JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
     }
 
     stages {
@@ -21,7 +20,7 @@ pipeline {
                 sh '''
                     echo "Starting setup stage..."
                     apt-get update
-                    apt-get install -y curl unzip
+                    apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
@@ -36,7 +35,6 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
                     bunx playwright test
                 '''
             }
@@ -46,9 +44,9 @@ pipeline {
             steps {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
                     export PATH=$JAVA_HOME/bin:$PATH
-                    bun --version || { echo "Bun not found"; exit 1; }
+                    bun --version
                     bun report:generate || true
                 '''
             }
