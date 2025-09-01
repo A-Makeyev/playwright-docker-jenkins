@@ -1,20 +1,20 @@
 pipeline {
     agent {
         docker {
-            image 'mcr.microsoft.com/playwright:bionic' // Official Playwright image
-            args '-u root:root' // optional, run as root inside container
+            image 'mcr.microsoft.com/playwright:bionic' // Official Playwright Docker image
+            args '-u root:root' // run as root inside container
         }
     }
 
     environment {
-        CI = 'true' // so headless: !!process.env.CI works
+        CI = 'true'
         ALLURE_RESULTS_DIR = 'allure-results'
         ALLURE_REPORT_DIR = 'allure-report'
+        PATH = "${env.HOME}/.bun/bin:${env.PATH}"
     }
 
     options {
         timestamps()
-        ansiColor('xterm')
         timeout(time: 30, unit: 'MINUTES')
     }
 
@@ -25,33 +25,46 @@ pipeline {
             }
         }
 
-        stage('Setup Bun & Dependencies') {
+        stage('Install Bun & Dependencies') {
             steps {
-                sh '''
-                    curl -fsSL https://bun.sh/install | bash
-                    export PATH="$HOME/.bun/bin:$PATH"
-                    bun install
-                    bunx playwright install
-                '''
+                ansiColor('xterm') {
+                    sh '''
+                        # Install Bun
+                        if [ ! -f "$HOME/.bun/bin/bun" ]; then
+                          curl -fsSL https://bun.sh/install | bash
+                        fi
+                        export PATH="$HOME/.bun/bin:$PATH"
+
+                        # Install project dependencies
+                        bun install
+
+                        # Install Playwright browsers
+                        bunx playwright install
+                    '''
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                    export PATH="$HOME/.bun/bin:$PATH"
-                    bunx playwright test
-                '''
+                ansiColor('xterm') {
+                    sh '''
+                        export PATH="$HOME/.bun/bin:$PATH"
+                        bunx playwright test
+                    '''
+                }
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                sh '''
-                    export PATH="$HOME/.bun/bin:$PATH"
-                    mkdir -p $ALLURE_RESULTS_DIR
-                    bunx allure generate $ALLURE_RESULTS_DIR --clean -o $ALLURE_REPORT_DIR
-                '''
+                ansiColor('xterm') {
+                    sh '''
+                        export PATH="$HOME/.bun/bin:$PATH"
+                        mkdir -p $ALLURE_RESULTS_DIR
+                        bunx allure generate $ALLURE_RESULTS_DIR --clean -o $ALLURE_REPORT_DIR
+                    '''
+                }
             }
         }
 
