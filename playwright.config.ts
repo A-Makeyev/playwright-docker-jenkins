@@ -13,9 +13,6 @@ export default defineConfig({
         trace: 'on-first-retry',
         video: 'retain-on-failure',
         screenshot: 'only-on-failure',
-        launchOptions: {
-            args: ['--no-sandbox'],
-        },
     },
     reporter: [
         ['list'],
