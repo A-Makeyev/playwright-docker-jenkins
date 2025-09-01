@@ -23,7 +23,7 @@ pipeline {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.55.0-noble'
                     reuseNode true
-                    args '--ipc=host'
+                    args '--ipc=host --user root'
                 }
             }
 
@@ -33,8 +33,8 @@ pipeline {
 
             steps {
                 sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y curl unzip openjdk-11-jre
+                    apt-get update
+                    apt-get install -y curl unzip openjdk-11-jre
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$PATH:/root/.bun/bin
                     bun --version
@@ -42,6 +42,8 @@ pipeline {
                     bun install
                     bunx playwright install --with-deps
                     bun test || true
+                    bun api-test || true
+                    bun test-chrome || true
                     bun report:generate || true
                 '''
             }
