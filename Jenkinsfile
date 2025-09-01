@@ -29,18 +29,21 @@ pipeline {
 
             steps {
                 sh '''
-                    apt-get update && apt-get install -y curl unzip
+                    apt-get update && apt-get install -y curl unzip openjdk-11-jre
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$PATH:/root/.bun/bin
                     test -f build/index.html
                     bun install
-                    bunx playwright test
+                    bunx playwright install --with-deps
+                    bun test
+                    bun report:generate
                 '''
             }
 
             post {
                 always {
-                    junit 'test-results/junit.xml'
+                    junit 'test-results/results.xml'
+                    archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
                 }
             }
         }

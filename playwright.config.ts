@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
     testDir: './tests',
     timeout: 30_000,
+    workers: '50%',
     retries: 0,
     use: {
         baseURL: 'https://www.anzu.io',
