@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    npx playwright test --reporter=line,allure-playwright,junit
+                    npx playwright test
                 '''
             }
         }
