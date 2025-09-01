@@ -23,9 +23,11 @@ pipeline {
                     apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    bun --version || { echo "Bun not found"; exit 1; }
+                    bun --version || { echo "Bun installation failed"; exit 1; }
                     bun install
                     bunx playwright install --with-deps
+                    echo "Workspace contents after setup:"
+                    ls -la ${WORKSPACE}
                 '''
             }
         }
@@ -34,8 +36,16 @@ pipeline {
             steps {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bunx playwright test
+                    export HOME=${WORKSPACE}
+                    echo "Running Playwright tests..."
+                    bunx playwright test || { echo "Playwright tests failed"; exit 1; }
+                    echo "Workspace contents after tests:"
+                    ls -la ${WORKSPACE}
+                    echo "Checking JUnit results:"
+                    ls -la ${WORKSPACE}/junit-results || echo "junit-results directory not found"
+                    ls -la ${WORKSPACE}/junit-results/results.xml || echo "junit-results/results.xml not found"
+                    echo "Checking Allure results:"
+                    ls -la ${WORKSPACE}/allure-results || echo "allure-results directory not found"
                 '''
             }
         }
@@ -47,7 +57,10 @@ pipeline {
                     export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
                     export PATH=$JAVA_HOME/bin:$PATH
                     bun --version
-                    bun report:generate || true
+                    echo "Generating Allure report..."
+                    bun report:generate
+                    echo "Allure report contents:"
+                    ls -la ${WORKSPACE}/allure-report || echo "allure-report directory not found"
                 '''
             }
         }
@@ -55,14 +68,12 @@ pipeline {
 
     post {
         always {
-            // Wrap junit and archiveArtifacts in a node block
             node('') {
-                junit allowEmptyResults: true, testResults: 'junit-results/results.xml' // Corrected path to match Playwright config
+                junit allowEmptyResults: true, testResults: 'junit-results/results.xml'
                 archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
             }
         }
         cleanup {
-            // Wrap cleanWs in a node block
             node('') {
                 cleanWs()
             }
