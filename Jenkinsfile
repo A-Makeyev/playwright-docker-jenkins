@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y curl
+                    apt-get install -y curl unzip
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$PATH:/root/.bun/bin
                     bun --version
