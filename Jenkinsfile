@@ -1,33 +1,46 @@
 pipeline {
-    agent {
-        docker {
-            image 'custom-playwright:latest'
-            args '--user root'  // Use root to avoid permission issues with DinD
-            registryUrl ''  // Local image
-            alwaysPull false
-        }
-    }
+    agent any
+
     stages {
-        stage('Build Docker Image') {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+
             steps {
-                sh 'docker build -t custom-playwright:latest .'
+                sh '''
+                    node --version
+                    npm --version
+                    npm ci
+                    npm run build
+                    ls -la build
+                '''
             }
         }
-        stage('Run Tests') {
-            steps {
-                sh 'bunx playwright test'  // Runs all tests per your config
-            }
-        }
-        stage('Generate Allure Report') {
-            steps {
-                sh 'bunx allure generate allure-results --clean -o allure-report'
-            }
-        }
-    }
-    post {
-        always {
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-report']]  // Publishes report
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true  // Archives for download
-        }
+
+        // stage('Test') {
+        //     agent {
+        //         docker {
+        //             image 'node:18-alpine'
+        //             reuseNode true
+        //         }
+        //     }
+
+        //     steps {
+        //         sh '''
+        //             test -f build/index.html
+        //             npm test
+        //         '''
+        //     }
+
+        //     post {
+        //         always {
+        //             junit 'test-results/junit.xml'
+        //         }
+        //     }
+        // }
     }
 }

@@ -1,36 +1,11 @@
-FROM node:20
-
-RUN curl -fsSL https://bun.sh/install | bash && \
-    ln -s /root/.bun/bin/bun /usr/local/bin/bun
-
-ENV PATH="/usr/local/bin:$PATH"
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY . .
-
-RUN bun install
-
-RUN bunx playwright install --with-deps
-
-RUN bun add -g allure-commandline
-
-RUN useradd -m -s /bin/bash playwright && \
-    chown -R playwright:playwright /app
-USER playwright
-
-CMD ["bunx", "playwright", "test"]
+FROM jenkins/jenkins:lts-jdk21
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce-cli
+USER jenkins

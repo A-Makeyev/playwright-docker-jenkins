@@ -1,6 +1,5 @@
 # playwright-docker-jenkins
 
-
 ### Create jenkins image
 docker-compose up -d
 
@@ -8,4 +7,4 @@ docker-compose up -d
 http://localhost:8080
 
 ### Get jenkins password
-docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPassword

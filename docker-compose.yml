@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   jenkins-docker:
     image: docker:dind
@@ -8,32 +7,33 @@ services:
       - DOCKER_TLS_CERTDIR=/certs
     volumes:
       - jenkins-docker-certs:/certs/client
-      - jenkins-data:/var/jenkins_home/docker  # Subdir for Docker data
+      - jenkins-data:/var/jenkins_home
     ports:
       - "2376:2376"
     networks:
-      - jenkins
+      jenkins:
+        aliases:
+          - docker
     command: --storage-driver overlay2
 
-  jenkins:
-    image: jenkins/jenkins:lts-jdk17
-    container_name: jenkins
-    restart: unless-stopped
+  jenkins-docker-example:
+    image: jenkins-docker-example
+    build:
+      context: .
+    container_name: jenkins-docker-example
+    restart: on-failure
     environment:
-      - DOCKER_HOST=tcp://jenkins-docker:2376
+      - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=true
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
     ports:
       - "8080:8080"
-      - "50000:50000"
+      - "5000:5000"
     networks:
       - jenkins
-    depends_on:
-      - jenkins-docker
 
 networks:
   jenkins:
