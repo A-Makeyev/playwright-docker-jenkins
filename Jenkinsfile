@@ -1,42 +1,57 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user root'
-            reuseNode true
-        }
+    agent any
+
+    tools {
+        // Use the Node.js tool name you configured in Jenkins
+        nodejs 'NodeJS 18' 
     }
 
     stages {
-        stage('Setup') {
+        stage('Checkout') {
             steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y curl openjdk-21-jdk
-                    npm install
-                    npx playwright install --with-deps
-                '''
+                checkout scm
             }
         }
 
-        stage('Test') {
+        stage('Install Dependencies') {
             steps {
-                sh '''
-                    npx playwright test --reporter=line,allure-playwright,junit
-                    chmod -R 777 allure-results
-                '''
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                script {
+                    // Use 'catchError' to ensure report generation continues even if tests fail
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        // Use your defined script for running all tests
+                        sh 'npm run test'
+                    }
+                }
+            }
+        }
+
+        stage('Publish Reports') {
+            steps {
+                // Publish JUnit report first for quick test result visibility
+                junit 'junit-report.xml' 
+
+                // Generate and publish Allure report
+                allure([
+                    includeProperties: false,
+                    reportBuildPolicy: 'ALWAYS',
+                    results: [[path: 'allure-results']],
+                ])
             }
         }
     }
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            allure results: [[path: 'allure-results']]
-            archiveArtifacts artifacts: 'allure-results/**,test-results/**', allowEmptyArchive: true
-        }
-        cleanup {
-            cleanWs()
+            echo "Build finished. Archiving reports."
+            // Archive the generated reports for later access
+            archiveArtifacts artifacts: 'allure-report/**', fingerprint: true
+            archiveArtifacts artifacts: 'junit-report.xml', fingerprint: true
         }
     }
 }
