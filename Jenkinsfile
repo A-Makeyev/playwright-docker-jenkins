@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test
+                    bunx playwright test --reporter=junit --output=test-results
                 '''
             }
         }
@@ -45,7 +45,7 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
                     export PATH=$JAVA_HOME/bin:$PATH
-                    bun report:generate || true
+                    bun report:generate
                 '''
             }
         }
@@ -53,11 +53,16 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            node {
+                // Make sure we are in workspace context for these steps
+                junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+                archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            }
         }
         cleanup {
-            cleanWs()
+            node {
+                cleanWs()
+            }
         }
     }
 }
