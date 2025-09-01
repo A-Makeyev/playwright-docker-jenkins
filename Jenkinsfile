@@ -1,55 +1,63 @@
 pipeline {
     agent {
         docker {
-            image 'mcr.microsoft.com/playwright:v1.55.0-jammy'  // Playwright official image
-            args '-u root'
+            image 'mcr.microsoft.com/playwright:v1.55.0-noble'
+            args '--ipc=host --user root'
+            reuseNode true
         }
     }
 
     environment {
         CI = 'true'
+        HOME = "${WORKSPACE}"
+        BUN_INSTALL = "/root/.bun"
+        PATH = "${BUN_INSTALL}/bin:${PATH}"
     }
 
     stages {
-        stage('Install') {
+        stage('Setup') {
             steps {
-                // Install project dependencies
-                sh 'npm install'
+                sh '''
+                    apt-get update
+                    apt-get install -y curl unzip openjdk-21-jdk
+                    curl -fsSL https://bun.sh/install | bash
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    bun --version || { echo "Bun not found"; exit 1; }
+                    bun install
+                    bunx playwright install --with-deps
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                // Run Playwright tests with both JUnit + Allure reporters
-                sh 'npx playwright test --reporter=line,junit,allure-playwright'
-            }
-            post {
-                always {
-                    // Collect JUnit results so Jenkins can parse them
-                    junit 'playwright-report/results.xml'
-                    
-                    // Save allure results for later report generation
-                    archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
-                }
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bunx playwright test
+                '''
             }
         }
 
-        stage('Allure Report') {
+        stage('Report') {
             steps {
-                // Generate the HTML report inside Jenkins workspace
-                sh 'npx allure generate allure-results --clean -o allure-report || true'
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-                }
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+                    export PATH=$JAVA_HOME/bin:$PATH
+                    bun report:generate || true
+                '''
             }
         }
     }
 
     post {
         always {
-            echo "✅ Pipeline finished. Check JUnit + Allure reports in Jenkins."
+            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+        }
+        cleanup {
+            cleanWs()
         }
     }
 }
