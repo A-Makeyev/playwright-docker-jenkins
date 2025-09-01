@@ -31,6 +31,6 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
 2) Set payload url to the url we got from ngrok and add github-webhook -> https://nominally-probable-rat.ngrok-free.app/github-webhook/
 3) Content type -> application/x-www-form-urlencoded
 
-## Quick commands
+## Quick commands (cmd)
 docker-compose up -d && ngrok start jenkins
 git add . && git commit -m "update -> %DATE% %TIME:~0,8%" && git push

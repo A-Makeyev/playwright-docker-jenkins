@@ -44,7 +44,17 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test:api
+                    bun run test:api
+                '''
+            }
+        }
+
+        stage('Concurrent test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bun run test --repeat-each=5 --workers=5
                 '''
             }
         }
