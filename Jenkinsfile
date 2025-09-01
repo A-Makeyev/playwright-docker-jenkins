@@ -25,7 +25,7 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bun install
-                    bunx playwright install --with-deps
+                    npx playwright install --with-deps
                     echo "Setup completed."
                 '''
             }
@@ -35,9 +35,8 @@ pipeline {
             steps {
                 sh '''
                     echo "Starting test stage..."
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    bun --version || { echo "Bun not found"; exit 1; }
-                    bun test
+                    # Run Playwright tests with Node, NOT Bun
+                    npx playwright test
                     echo "Tests completed."
                 '''
             }
