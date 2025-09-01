@@ -52,10 +52,10 @@ pipeline {
     }
 
     post {
-        always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-        }
+        // always {
+        //     junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+        //     archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+        // }
         cleanup {
             cleanWs()
         }
