@@ -28,7 +28,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Run Tests') {
             parallel {
                 stage('UI Test') {
@@ -52,6 +52,7 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bunx allure generate allure-results --clean -o allure-report || true
                 '''
@@ -61,18 +62,12 @@ pipeline {
 
     post {
         always {
-            node {
-                label ''
-                junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-                archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            }
+            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
-            node {
-                label ''
-                cleanWs()
-                sh 'docker rm -f $(docker ps -aq -f "ancestor=mcr.microsoft.com/playwright:v1.55.0-noble") || true'
-            }
+            cleanWs()
+            sh 'docker rm -f $(docker ps -aq -f "ancestor=mcr.microsoft.com/playwright:v1.55.0-noble") || true'
         }
     }
 }
