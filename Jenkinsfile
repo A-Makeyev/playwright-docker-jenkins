@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'mcr.microsoft.com/playwright:v1.55.0-jammy'  // official Playwright Docker image
-            args '-u root'  // run as root so we can install dependencies
+            image 'mcr.microsoft.com/playwright:v1.55.0-jammy'  // Playwright official image
+            args '-u root'
         }
     }
 
@@ -13,19 +13,22 @@ pipeline {
     stages {
         stage('Install') {
             steps {
-                sh 'npm ci'
+                // Install project dependencies
+                sh 'npm install'
             }
         }
 
         stage('Test') {
             steps {
-                // Run Playwright tests with JUnit + Allure
+                // Run Playwright tests with both JUnit + Allure reporters
                 sh 'npx playwright test --reporter=line,junit,allure-playwright'
             }
             post {
                 always {
-                    // Archive raw results
+                    // Collect JUnit results so Jenkins can parse them
                     junit 'playwright-report/results.xml'
+                    
+                    // Save allure results for later report generation
                     archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
                 }
             }
@@ -33,7 +36,7 @@ pipeline {
 
         stage('Allure Report') {
             steps {
-                // Generate allure report
+                // Generate the HTML report inside Jenkins workspace
                 sh 'npx allure generate allure-results --clean -o allure-report || true'
             }
             post {
@@ -46,7 +49,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished. Reports generated."
+            echo "✅ Pipeline finished. Check JUnit + Allure reports in Jenkins."
         }
     }
 }

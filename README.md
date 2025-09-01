@@ -21,7 +21,7 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
     - name: APP_NAME
         url: nominally-probable-rat.ngrok-free.app
         upstream:
-        url: 80
+        url: 8080
 
 4) Open cmd and run -> ngrok start APP_NAME
 5) ngrok will create a url which redirects to your localhost (https://nominally-probable-rat.ngrok-free.app -> http://localhost:8080)
