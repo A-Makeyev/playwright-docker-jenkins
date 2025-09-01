@@ -2,22 +2,20 @@ pipeline {
     agent {
         docker {
             image 'custom-playwright:latest'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock' 
-            registryUrl '' 
+            args '--user root'  // Use root to avoid permission issues with DinD
+            registryUrl ''  // Local image
             alwaysPull false
         }
     }
     stages {
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build('custom-playwright:latest', '.')
-                }
+                sh 'docker build -t custom-playwright:latest .'
             }
         }
         stage('Run Tests') {
             steps {
-                sh 'bunx playwright test' 
+                sh 'bunx playwright test'  // Runs all tests per your config
             }
         }
         stage('Generate Allure Report') {
@@ -28,8 +26,8 @@ pipeline {
     }
     post {
         always {
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-report']]  
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true 
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-report']]  // Publishes report
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true  // Archives for download
         }
     }
 }
