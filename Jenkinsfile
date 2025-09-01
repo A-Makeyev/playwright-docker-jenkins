@@ -55,11 +55,17 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            // Wrap junit and archiveArtifacts in a node block
+            node('') {
+                junit allowEmptyResults: true, testResults: 'junit-results/results.xml' // Corrected path to match Playwright config
+                archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            }
         }
         cleanup {
-            cleanWs()
+            // Wrap cleanWs in a node block
+            node('') {
+                cleanWs()
+            }
         }
     }
 }
