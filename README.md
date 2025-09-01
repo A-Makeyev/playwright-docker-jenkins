@@ -33,4 +33,4 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
 
 ## Quick commands
 docker-compose up -d && ngrok start jenkins
-git add . && git commit -m "update %date:~0,3% %date:~7,2%/%date:~4,2%/%date:~10,4% %time%" && git push
+git add . && git commit -m "update -> %DATE% %TIME:~0,8%" && git push

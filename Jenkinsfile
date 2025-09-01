@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test:ui
+                    bun run test:ui
                 '''
             }
         }
@@ -54,7 +54,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
-                    npx allure generate allure-results --clean -o allure-report || true
+                    bunx allure generate allure-results --clean -o allure-report || true
                 '''
             }
         }
