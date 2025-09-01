@@ -1,38 +1,52 @@
 pipeline {
-    agent {
-        docker {
-            image 'jarredsumner/bun:latest'
-            args '-u root:root'
-        }
-    }
+    agent any
 
     environment {
-        CI = 'true'
+        BUN_IMAGE = 'jarredsumner/bun:latest'
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                sh 'bun install'
+                node {
+                    docker.image(env.BUN_IMAGE).inside {
+                        sh 'bun install'
+                    }
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'bun run test'
+                node {
+                    docker.image(env.BUN_IMAGE).inside {
+                        sh 'bun test'
+                    }
+                }
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                sh 'bun run allure generate allure-results --clean -o allure-report'
+                node {
+                    docker.image(env.BUN_IMAGE).inside {
+                        sh 'bun add allure-cli --global || true'
+                        sh 'allure generate allure-results --clean -o allure-report'
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'allure-report/**', fingerprint: true
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
     }
 }
