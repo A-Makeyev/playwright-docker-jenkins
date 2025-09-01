@@ -64,12 +64,16 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            node {
+                junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+                archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            }
         }
         cleanup {
-            cleanWs()
-            sh 'docker rm -f $(docker ps -aq -f "ancestor=your-custom-image:tag") || true'
+            node {
+                cleanWs()
+                sh 'docker rm -f $(docker ps -aq -f "ancestor=your-custom-image:tag") || true' // Replace image name if needed
+            }
         }
     }
 }
