@@ -11,8 +11,7 @@ pipeline {
         CI = 'true'
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
-        JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
-        PATH = "${BUN_INSTALL}/bin:${JAVA_HOME}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        PATH = "${BUN_INSTALL}/bin:${PATH}"
     }
 
     stages {
@@ -21,14 +20,12 @@ pipeline {
                 sh '''
                     echo "Starting setup stage..."
                     apt-get update
-                    apt-get install -y curl unzip openjdk-21-jdk xz-utils tar
-                    curl -fsSL https://bun.sh/install | bash -s -- --yes
-                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
+                    apt-get install -y curl unzip openjdk-21-jdk
+                    curl -fsSL https://bun.sh/install | bash
+                    export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bun install
                     bunx playwright install --with-deps
-                    mkdir -p allure-results allure-report
-                    chmod -R 777 allure-results allure-report
                 '''
             }
         }
@@ -36,9 +33,9 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
+                    export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test || true
+                    bunx playwright test
                 '''
             }
         }
@@ -46,11 +43,11 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+                    export PATH=$JAVA_HOME/bin:$PATH
                     bun --version
-                    java -version
                     bun report:generate || true
-                    chmod -R 777 allure-results allure-report
                 '''
             }
         }
@@ -60,7 +57,6 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
         cleanup {
             cleanWs()
