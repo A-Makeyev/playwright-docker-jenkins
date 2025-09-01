@@ -25,12 +25,6 @@ pipeline {
                     bun --version
                     bun install
                     bunx playwright install --with-deps
-                    # Install Allure Commandline
-                    curl -L https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.32.0/allure-commandline-2.32.0.zip -o allure.zip
-                    unzip allure.zip -d /opt
-                    rm allure.zip
-                    export PATH=$PATH:/opt/allure-2.32.0/bin
-                    allure --version
                 '''
             }
         }
@@ -38,7 +32,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH:/opt/allure-2.32.0/bin
+                    export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
                     bunx playwright test --reporter=line,allure-playwright,junit
                     # Fix permissions for Allure plugin access
