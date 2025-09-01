@@ -12,6 +12,9 @@ pipeline {
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
         PATH = "${BUN_INSTALL}/bin:${PATH}"
+        // Add Allure specific environment variables
+        ALLURE_HOME = "/opt/allure"
+        PATH = "${ALLURE_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -20,9 +23,19 @@ pipeline {
                 sh '''
                     apt-get update
                     apt-get install -y curl unzip openjdk-21-jdk
+                    
+                    # Install Bun
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
+                    
+                    # Install Allure Commandline
+                    mkdir -p /opt/allure
+                    curl -o allure-2.34.1.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.34.1/allure-2.34.1.tgz
+                    tar -zxvf allure-2.34.1.tgz -C /opt/allure --strip-components=1
+                    ln -sf /opt/allure/bin/allure /usr/local/bin/allure
+                    
+                    # Install project dependencies
                     bun install
                     bunx playwright install --with-deps
                 '''
@@ -34,7 +47,8 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test
+                    # Run tests with Allure reporter
+                    bunx playwright test --reporter=line,allure-playwright
                 '''
             }
         }
@@ -43,9 +57,13 @@ pipeline {
             steps {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                    export PATH=$JAVA_HOME/bin:$PATH
-                    bun report:generate || true
+                    export PATH=/opt/allure/bin:$PATH
+                    
+                    # Generate Allure report
+                    allure generate allure-results --clean -o allure-report
+                    
+                    # Also generate JUnit report for Jenkins compatibility
+                    allure generate allure-results --clean -o allure-report --report-dir allure-report
                 '''
             }
         }
@@ -53,8 +71,12 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            // Archive both JUnit and Allure results
+            junit allowEmptyResults: true, testResults: 'test-results/*.xml'
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            
+            // Archive the generated report
+            archiveArtifacts artifacts: 'allure-report/**/*', allowEmptyArchive: true
         }
         cleanup {
             cleanWs()

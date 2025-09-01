@@ -15,9 +15,8 @@ export default defineConfig({
         screenshot: 'only-on-failure',
     },
     reporter: [
-        ['list'],
-        ['allure-playwright'],
-        ['junit', { outputFile: 'test-results/results.xml' }]
+        ['line'],
+        ['allure-playwright']
     ],
     projects: [
         { name: 'Chromium', use: { browserName: 'chromium' } },
