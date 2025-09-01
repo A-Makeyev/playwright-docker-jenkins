@@ -6,6 +6,8 @@ bun.lock
 test-results/
 allure-report/
 allure-results/
+junit-results/
+playwright-report/
 
 # Build output
 dist/
