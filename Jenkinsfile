@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'your-custom-image:tag' // Replace with 'mcr.microsoft.com/playwright:v1.55.0-noble' if not using a custom image
-            args '--ipc=host --user root -v bun-cache:/root/.bun -v node-modules:/workspace/node_modules'
+            image 'mcr.microsoft.com/playwright:v1.55.0-noble'
+            args '--ipc=host --user root'
             reuseNode true
         }
     }
@@ -18,16 +18,13 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    if [ ! -d "$BUN_INSTALL" ]; then
-                        apt-get update
-                        apt-get install -y curl unzip openjdk-17-jre
-                        curl -fsSL https://bun.sh/install | bash
-                    fi
+                    apt-get update
+                    apt-get install -y curl unzip openjdk-17-jre
+                    curl -fsSL https://bun.sh/install | bash
+                    export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
-                    if [ ! -d "node_modules" ]; then
-                        bun install
-                        bunx playwright install --with-deps
-                    fi
+                    bun install
+                    bunx playwright install --with-deps
                 '''
             }
         }
@@ -56,7 +53,7 @@ pipeline {
             steps {
                 sh '''
                     bun --version || { echo "Bun not found"; exit 1; }
-                    bunx allure generate allure-results --clean -o allure-report || { echo "Allure report generation failed"; exit 0; }
+                    bunx allure generate allure-results --clean -o allure-report || true
                 '''
             }
         }
@@ -72,7 +69,7 @@ pipeline {
         cleanup {
             node {
                 cleanWs()
-                sh 'docker rm -f $(docker ps -aq -f "ancestor=your-custom-image:tag") || true' // Replace image name if needed
+                sh 'docker rm -f $(docker ps -aq -f "ancestor=mcr.microsoft.com/playwright:v1.55.0-noble") || true'
             }
         }
     }
