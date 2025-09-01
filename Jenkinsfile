@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user root'
+            image 'your-custom-image:tag' // Replace with 'mcr.microsoft.com/playwright:v1.55.0-noble' if not using a custom image
+            args '--ipc=host --user root -v bun-cache:/root/.bun -v node-modules:/workspace/node_modules'
             reuseNode true
         }
     }
@@ -18,53 +18,45 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    apt-get update
-                    apt-get install -y curl unzip openjdk-17-jre
-                    curl -fsSL https://bun.sh/install | bash
-                    export PATH=$BUN_INSTALL/bin:$PATH
+                    if [ ! -d "$BUN_INSTALL" ]; then
+                        apt-get update
+                        apt-get install -y curl unzip openjdk-17-jre
+                        curl -fsSL https://bun.sh/install | bash
+                    fi
                     bun --version || { echo "Bun not found"; exit 1; }
-                    bun install
-                    bunx playwright install --with-deps
+                    if [ ! -d "node_modules" ]; then
+                        bun install
+                        bunx playwright install --with-deps
+                    fi
                 '''
             }
         }
 
-        stage('UI Test') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bun run test:ui
-                '''
-            }
-        }
-
-        stage('API Test') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bun run test:api
-                '''
-            }
-        }
-
-        stage('Concurrent test') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bun run test --repeat-each=2 --workers=2
-                '''
+        stage('Run Tests') {
+            parallel {
+                stage('UI Test') {
+                    steps {
+                        sh 'bun run test:ui'
+                    }
+                }
+                stage('API Test') {
+                    steps {
+                        sh 'bun run test:api'
+                    }
+                }
+                stage('Concurrent Test') {
+                    steps {
+                        sh 'bun run test --repeat-each=2 --workers=2'
+                    }
+                }
             }
         }
 
         stage('Report') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
-                    bunx allure generate allure-results --clean -o allure-report || true
+                    bunx allure generate allure-results --clean -o allure-report || { echo "Allure report generation failed"; exit 0; }
                 '''
             }
         }
@@ -77,6 +69,7 @@ pipeline {
         }
         cleanup {
             cleanWs()
+            sh 'docker rm -f $(docker ps -aq -f "ancestor=your-custom-image:tag") || true'
         }
     }
 }
