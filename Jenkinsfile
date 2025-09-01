@@ -38,32 +38,13 @@ pipeline {
                 '''
             }
         }
-
-        stage('Report') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                    export PATH=$JAVA_HOME/bin:$PATH
-                    bunx allure generate allure-results --clean -o allure-report || true
-                '''
-            }
-        }
     }
 
     post {
         always {
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-
-            publishHTML([
-                reportDir: 'allure-report',
-                reportFiles: 'index.html',
-                reportName: 'Allure Report',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: true
-            ])
+            allure results: [[path: 'allure-results']]
+            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
         }
         cleanup {
             cleanWs()
