@@ -11,10 +11,9 @@ pipeline {
         CI = 'true'
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
-        PATH = "${BUN_INSTALL}/bin:${PATH}"
-        // Add Allure specific environment variables
         ALLURE_HOME = "/opt/allure"
-        PATH = "${ALLURE_HOME}/bin:${PATH}"
+        // Combine all paths in a single PATH definition
+        PATH = "${ALLURE_HOME}/bin:${BUN_INSTALL}/bin:${PATH}"
     }
 
     stages {
@@ -45,7 +44,6 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
                     # Run tests with Allure reporter
                     bunx playwright test --reporter=line,allure-playwright
@@ -56,9 +54,6 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export PATH=/opt/allure/bin:$PATH
-                    
                     # Generate Allure report
                     allure generate allure-results --clean -o allure-report
                     
