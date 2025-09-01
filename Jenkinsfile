@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    bunx playwright test --reporter=line, allure-playwright, junit
+                    bunx playwright test --reporter=line,allure-playwright,junit
                 '''
             }
         }
@@ -55,6 +55,15 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+
+            publishHTML([
+                reportDir: 'allure-report',
+                reportFiles: 'index.html',
+                reportName: 'Allure Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
         }
         cleanup {
             cleanWs()
