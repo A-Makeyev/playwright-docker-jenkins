@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user root'  // Keep root for now, but we'll fix permissions
+            args '--ipc=host --user root'
             reuseNode true
         }
     }
@@ -25,8 +25,6 @@ pipeline {
                     bun --version
                     bun install
                     bunx playwright install --with-deps
-                    # Fix permissions for the workspace
-                    chmod -R u+rwX "${WORKSPACE}"
                 '''
             }
         }
@@ -37,6 +35,8 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
                     bunx playwright test --reporter=line,allure-playwright,junit
+                    # Fix permissions for Allure plugin access
+                    chmod -R 777 allure-results
                 '''
             }
         }
