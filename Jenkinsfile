@@ -11,9 +11,8 @@ pipeline {
         CI = 'true'
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
-        PATH = "${BUN_INSTALL}/bin:${PATH}"
         JAVA_HOME = "/usr/lib/jvm/java-21-openjdk-amd64"
-        PATH = "${JAVA_HOME}/bin:${PATH}"
+        PATH = "${BUN_INSTALL}/bin:${JAVA_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -24,7 +23,7 @@ pipeline {
                     apt-get update
                     apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
-                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bun install
                     bunx playwright install --with-deps
@@ -35,9 +34,8 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
                     export HOME=/root
-                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
                     bunx playwright test
                 '''
             }
@@ -46,9 +44,7 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-                    export PATH=$JAVA_HOME/bin:$PATH
+                    export PATH=$BUN_INSTALL/bin:$JAVA_HOME/bin:$PATH
                     bun --version
                     bun report:generate || true
                 '''
@@ -60,7 +56,7 @@ pipeline {
         always {
             // Archive HTML for download
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-            // Publish Allure report in Jenkins UI
+            // Publish Allure report in Jenkins UI (requires Allure plugin)
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             // Publish test results for JUnit tab
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
