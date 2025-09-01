@@ -1,4 +1,5 @@
-# playwright-docker-jenkins
+# Playwright Docker Jenkins
+[GitHub Repository](https://github.com/A-Makeyev/playwright-docker-jenkins)
 
 ### Create jenkins image
 docker-compose up -d
