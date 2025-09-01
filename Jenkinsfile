@@ -19,14 +19,21 @@ pipeline {
             steps {
                 sh '''
                     echo "Starting setup stage..."
+                    
+                    # Install required packages
                     apt-get update
-                    apt-get install -y curl unzip
+                    apt-get install -y curl unzip openjdk-21-jdk
                     curl -fsSL https://bun.sh/install | bash
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
+                    
+                    # Install dependencies
                     bun install
-                    npx playwright install --with-deps
-                    echo "Setup completed."
+                    bunx playwright install --with-deps
+
+                    # Fix workspace permissions for Jenkins
+                    chown -R jenkins:jenkins $WORKSPACE
+                    chmod -R 775 $WORKSPACE
                 '''
             }
         }
@@ -34,12 +41,9 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    echo "Starting test stage..."
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    # Run Playwright tests using Node
-                    npx playwright test
-                    echo "Tests completed."
+                    bunx playwright test
                 '''
             }
         }
@@ -47,11 +51,16 @@ pipeline {
         stage('Report') {
             steps {
                 sh '''
-                    echo "Starting report stage..."
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    bun --version || { echo "Bun not found"; exit 1; }
+                    # Set Java home for Allure
+                    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+                    export PATH=$JAVA_HOME/bin:$BUN_INSTALL/bin:$PATH
+
+                    # Generate Allure report
                     bun report:generate || true
-                    echo "Report generation completed."
+
+                    # Fix permissions so Jenkins can read the report
+                    chown -R jenkins:jenkins allure-report allure-results
+                    chmod -R 775 allure-report allure-results
                 '''
             }
         }
@@ -61,8 +70,8 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: 'test-results/results.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-        }
-        cleanup {
+
+            // Optional: clean workspace
             cleanWs()
         }
     }
