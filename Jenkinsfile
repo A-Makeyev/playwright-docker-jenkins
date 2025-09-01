@@ -48,25 +48,17 @@ pipeline {
                     bun report:generate || true
                 '''
             }
-            
-            post {
-                always {
-                    allure includeProperties:
-                     false,
-                     jdk: '',
-                     results: [[path: 'build/allure-results']]
-                }
-            }
         }
     }
 
-    // post {
-    //     always {
-    //         junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-    //         archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-    //     }
-    //     cleanup {
-    //         cleanWs()
-    //     }
-    // }
+    post {
+        always {
+            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            allure includeProperties: results: [[path: 'build/allure-results']]
+        }
+        cleanup {
+            cleanWs()
+        }
+    }
 }
