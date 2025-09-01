@@ -1,9 +1,10 @@
 pipeline {
-    agent any
-
-    tools {
-        // Use the Node.js tool name you configured in Jenkins
-        nodejs 'NodeJS 18' 
+    agent {
+        // Specify a Docker agent using an official Playwright image that includes browsers and Node.js
+        // Choose a tag that corresponds to your Playwright version
+        docker {
+            image 'mcr.microsoft.com/playwright:v1.49.1' // Example version; replace with your version
+        }
     }
 
     stages {
@@ -13,19 +14,20 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Dependencies with Bun') {
             steps {
-                sh 'npm install'
+                // Installs project dependencies using Bun
+                sh 'bun install --frozen-lockfile'
             }
         }
 
-        stage('Run Playwright Tests') {
+        stage('Run Playwright Tests with Bun') {
             steps {
                 script {
                     // Use 'catchError' to ensure report generation continues even if tests fail
                     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        // Use your defined script for running all tests
-                        sh 'npm run test'
+                        // Use bunx to run Playwright tests
+                        sh 'bunx playwright test'
                     }
                 }
             }
@@ -33,8 +35,8 @@ pipeline {
 
         stage('Publish Reports') {
             steps {
-                // Publish JUnit report first for quick test result visibility
-                junit 'junit-report.xml' 
+                // Publish JUnit report
+                junit 'junit-report.xml'
 
                 // Generate and publish Allure report
                 allure([
@@ -49,7 +51,6 @@ pipeline {
     post {
         always {
             echo "Build finished. Archiving reports."
-            // Archive the generated reports for later access
             archiveArtifacts artifacts: 'allure-report/**', fingerprint: true
             archiveArtifacts artifacts: 'junit-report.xml', fingerprint: true
         }
