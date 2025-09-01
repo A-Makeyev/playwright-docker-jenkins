@@ -1,52 +1,56 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/playwright:v1.55.0-noble'
+            args '--ipc=host --user root'
+            reuseNode true
+        }
+    }
 
     environment {
-        BUN_IMAGE = 'jarredsumner/bun:latest'
+        CI = 'true'
+        HOME = "${WORKSPACE}"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Setup') {
             steps {
-                checkout scm
+                sh '''
+                    apt-get update
+                    apt-get install -y curl
+                    curl -fsSL https://bun.sh/install | bash
+                    export PATH=$PATH:/root/.bun/bin
+                    bun --version
+                    bun install
+                    bunx playwright install --with-deps
+                '''
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Test') {
             steps {
-                node {
-                    docker.image(env.BUN_IMAGE).inside {
-                        sh 'bun install'
-                    }
-                }
+                sh '''
+                    bun test
+                '''
             }
         }
 
-        stage('Run Tests') {
+        stage('Report') {
             steps {
-                node {
-                    docker.image(env.BUN_IMAGE).inside {
-                        sh 'bun test'
-                    }
-                }
-            }
-        }
-
-        stage('Generate Allure Report') {
-            steps {
-                node {
-                    docker.image(env.BUN_IMAGE).inside {
-                        sh 'bun add allure-cli --global || true'
-                        sh 'allure generate allure-results --clean -o allure-report'
-                    }
-                }
+                sh '''
+                    bun report:generate || true
+                '''
             }
         }
     }
 
     post {
         always {
+            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+        }
+        cleanup {
+            cleanWs()
         }
     }
 }
