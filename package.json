@@ -1,0 +1,17 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.0",
+    "allure-commandline": "^2.34.1",
+    "allure-playwright": "^3.3.3"
+  },
+    "scripts": {
+    "test": "bunx playwright test",
+    "ui-test": "bunx playwright test tests/ui",
+    "api-test": "bunx playwright test tests/api",
+    "test-chrome": "bunx playwright test --project=chromium",
+    "report:generate": "bunx allure generate allure-results --clean -o allure-report",
+    "report:open": "bunx allure open allure-report"
+  }
+}
