@@ -24,17 +24,27 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bun install
-                    npx playwright install --with-deps
+                    bunx playwright install --with-deps
                 '''
             }
         }
 
-        stage('Test') {
+        stage('UI Test') {
             steps {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     export HOME=/root
-                    npx playwright test
+                    bunx playwright test:ui
+                '''
+            }
+        }
+
+        stage('API Test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bunx playwright test:api
                 '''
             }
         }

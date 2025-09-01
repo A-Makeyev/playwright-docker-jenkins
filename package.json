@@ -8,9 +8,9 @@
   },
     "scripts": {
     "test": "bunx playwright test",
-    "ui-test": "bunx playwright test tests/ui",
-    "api-test": "bunx playwright test tests/api",
-    "test-chrome": "bunx playwright test --project=chromium",
+    "test:ui": "bunx playwright test tests/ui",
+    "test:api": "bunx playwright test tests/api",
+    "test:chrome": "bunx playwright test --project=chromium",
     "report:generate": "bunx allure generate allure-results --clean -o allure-report",
     "report:open": "bunx allure open allure-report"
   }
