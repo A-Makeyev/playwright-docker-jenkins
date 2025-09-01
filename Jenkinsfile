@@ -1,62 +1,74 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/playwright:bionic' // Official Playwright image
+            args '-u root:root' // optional, run as root inside container
+        }
+    }
+
+    environment {
+        CI = 'true' // so headless: !!process.env.CI works
+        ALLURE_RESULTS_DIR = 'allure-results'
+        ALLURE_REPORT_DIR = 'allure-report'
+    }
+
+    options {
+        timestamps()
+        ansiColor('xterm')
+        timeout(time: 30, unit: 'MINUTES')
+    }
 
     stages {
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
+        }
 
+        stage('Setup Bun & Dependencies') {
             steps {
                 sh '''
-                    node --version
-                    npm --version   
-                    # Add commands to generate build/index.html if needed
-                    mkdir -p build
-                    echo "<html><body>Build output</body></html>" > build/index.html
+                    curl -fsSL https://bun.sh/install | bash
+                    export PATH="$HOME/.bun/bin:$PATH"
+                    bun install
+                    bunx playwright install
                 '''
             }
         }
 
-        stage('Test') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-                    reuseNode true
-                    args '--ipc=host --user root'
-                }
-            }
-
-            environment {
-                CI = 'true'
-            }
-
+        stage('Run Tests') {
             steps {
                 sh '''
-                    echo "CI variable: $CI"
-                    ls -la
-                    apt-get update
-                    apt-get install -y curl unzip openjdk-11-jre
-                    curl -fsSL https://bun.sh/install | bash
-                    export PATH=$PATH:/root/.bun/bin
-                    bun --version
-                    test -f build/index.html || true
-                    bun install
-                    bunx playwright install --with-deps
-                    bun test || true
-                    bun report:generate || true
+                    export PATH="$HOME/.bun/bin:$PATH"
+                    bunx playwright test
                 '''
             }
+        }
 
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-                    archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
-                }
+        stage('Generate Allure Report') {
+            steps {
+                sh '''
+                    export PATH="$HOME/.bun/bin:$PATH"
+                    mkdir -p $ALLURE_RESULTS_DIR
+                    bunx allure generate $ALLURE_RESULTS_DIR --clean -o $ALLURE_REPORT_DIR
+                '''
             }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                allure includeProperties: false, jdk: '', results: [[path: "$ALLURE_RESULTS_DIR"]]
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
+            junit 'test-results/**/*.xml'
+        }
+        failure {
+            echo 'Tests failed!'
         }
     }
 }
