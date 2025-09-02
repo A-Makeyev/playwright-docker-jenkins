@@ -20,6 +20,9 @@ docker-compose up -d
 ### Start jenkins
 docker-compose start
 
+### Stop jenkins
+docker-compose stop
+
 ### Open jenkins
 http://localhost:8080
 
