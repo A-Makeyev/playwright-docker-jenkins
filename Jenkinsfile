@@ -36,7 +36,7 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:ui
+                            bun run test:ui || { echo "UI tests failed"; exit 1; }
                         '''
                     }
                 }
@@ -46,7 +46,7 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:api
+                            bun run test:api || { echo "API tests failed"; exit 1; }
                         '''
                     }
                 }
@@ -56,9 +56,17 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test --repeat-each=2 --workers=2
+                            bun run test --repeat-each=2 --workers=2 || { echo "Concurrent tests failed"; exit 1; }
                         '''
                     }
+                }
+            }
+            post {
+                always {
+                    sh '''
+                        echo "Workspace: $WORKSPACE"
+                        ls -l test-results/ || echo "No test-results directory found"
+                    '''
                 }
             }
         }
@@ -76,11 +84,11 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
+            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/*.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
-            node('master') { 
+            node('') {
                 cleanWs()
                 sh 'docker rm -f $(docker ps -aq -f "ancestor=mcr.microsoft.com/playwright:v1.55.0-noble") || true'
             }

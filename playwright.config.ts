@@ -23,21 +23,9 @@ export default defineConfig({
     },
 
     reporter: [
-        ['html'],
-        ['junit', { 
-        outputFile: 'junit-results/results.xml',
-        includeProjectInTestName: true 
-        }],
-        ['allure-playwright', {
-        detail: true,
-        outputFolder: 'allure-results',
-        suiteTitle: false,
-        environmentInfo: {
-            framework: 'Playwright',
-            node_version: process.version,
-        }
-        }],
-        ['list']
+        ['list'], 
+        ['junit', { outputFile: 'test-results/results.xml' }], 
+        ['allure', { outputFolder: 'allure-results' }], 
     ],
     
     projects: [
