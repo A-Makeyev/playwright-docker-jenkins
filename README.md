@@ -55,7 +55,6 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
 docker-compose start && ngrok start jenkins
 git add . && git commit -m "update <%DATE% %TIME:~0,8%>" && git push
 
-
 ## Clean
 ```
 To remove dangling images:

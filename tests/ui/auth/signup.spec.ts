@@ -20,11 +20,14 @@ test.describe('Signup form', () => {
             email: 'anatoly.makeyev@gmail.com',
             gameName: 'Crash Bandicoot',
             mainPlatform: 'Mobile',
+            isGameLive: 'Yes',
             gameEngine: 'Unity',
-            howDidYouHear: 'Website',
+            domainName: 'https://CrashBandicoot.com',
+            appStoreLink: 'https://play.google.com/store/apps/details?id=com.ninjabaseballarcade.mameclassic&pcampaignid=web_share',
+            howDidYouHear: 'Website'
         })
 
-        // await page.waitForTimeout(10_000)
-        // await signupPage.submit()
+        await signupPage.submit()
+        await signupPage.checkSubmitError()
     })
 })

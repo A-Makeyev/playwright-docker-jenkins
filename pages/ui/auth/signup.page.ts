@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test'
+import { Page, Locator, expect } from '@playwright/test'
 
 
 export class SignupPage {
@@ -11,6 +11,9 @@ export class SignupPage {
         suffixSelect: Locator
         emailInput: Locator
         gameNameInput: Locator
+        isGameLiveSelect: Locator
+        domainNameInput: Locator
+        appStoreLinkInput: Locator
         mainPlatformSelect: Locator
         gameEngineSelect: Locator
         howDidYouHearSelect: Locator
@@ -20,6 +23,7 @@ export class SignupPage {
         submitButton: Locator
         cookiesWindow: Locator
         rejectCookiesButton: Locator
+        requiredErrorMessageText: Locator
     }
 
     constructor(page: Page) {
@@ -32,6 +36,9 @@ export class SignupPage {
             suffixSelect: page.locator('//select[contains(@id, "0-2/suffix")]'),
             emailInput: page.locator('//input[contains(@id, "email")]'),
             gameNameInput: page.locator('//input[contains(@id, "game_name")]'),
+            isGameLiveSelect: page.locator('//select[contains(@id, "is_your_game_live_already")]'),
+            domainNameInput: page.locator('//input[contains(@id, "website_address__for_sellers")]'),
+            appStoreLinkInput: page.locator('//input[contains(@id, "app_store_play_store_link")]'),
             mainPlatformSelect: page.locator('//select[contains(@id, "main_platform_on_signup")]'),
             gameEngineSelect: page.locator('//select[contains(@id, "main_game_engine_on_signup")]'),
             howDidYouHearSelect: page.locator('//select[contains(@id, "how_did_you_hear_about_us_")]'),
@@ -40,7 +47,8 @@ export class SignupPage {
             privacyConsentCheckbox: page.locator('//input[contains(@id, "LEGAL_CONSENT.processing")]'),
             submitButton: page.locator('//input[@value="Sign up"]'),
             cookiesWindow: page.locator('#hs-eu-cookie-confirmation-inner'),
-            rejectCookiesButton: page.locator('#hs-eu-decline-button')
+            rejectCookiesButton: page.locator('#hs-eu-decline-button'),
+            requiredErrorMessageText: page.locator('//label[contains(@class, "hs-error-msg")]')
         }
     }
 
@@ -48,11 +56,12 @@ export class SignupPage {
         await this.page.goto('/sign-up')
     }
 
-    async closeCookiePopup() {
+    async closeCookiePopup({ page }) {
         const popup = this.locators.cookiesWindow
         const isPopupPresent = await popup.evaluate(el => el !== null)
 
         if (isPopupPresent) {
+            await page.waitForTimeout(1000)
             await this.locators.rejectCookiesButton.click()
             await Promise.race([
                 this.locators.cookiesWindow.waitFor({ state: 'hidden', timeout: 5000 }),
@@ -69,28 +78,45 @@ export class SignupPage {
         email: string
         gameName: string
         mainPlatform: string
+        isGameLive?: string
+        domainName: string
+        appStoreLink: string
         gameEngine: string
-        howDidYouHear?: string
+        howDidYouHear: string
     }) {
-        await this.locators.firstnameInput.pressSequentially(data.firstname)
+        await this.locators.firstnameInput.pressSequentially(data.firstname, { delay: 50 })
         await this.locators.lastnameInput.pressSequentially(data.lastname)
         await this.locators.companyNameInput.pressSequentially(data.companyName)
-        await this.locators.emailInput.pressSequentially(data.email, { delay: 50 })
+        await this.locators.emailInput.pressSequentially(data.email)
         await this.locators.gameNameInput.pressSequentially(data.gameName)
         await this.locators.mainPlatformSelect.selectOption(data.mainPlatform)
-        await this.locators.gameEngineSelect.selectOption(data.gameEngine)
-        await this.locators.suffixSelect.selectOption(data.suffix)
 
-        if (data.howDidYouHear) {
-            await this.locators.howDidYouHearSelect.selectOption(data.howDidYouHear)
+        if (data.isGameLive) {
+            await this.locators.isGameLiveSelect.selectOption(data.isGameLive)
         }
+        
+        await this.locators.domainNameInput.pressSequentially(data.domainName)
+        await this.locators.gameEngineSelect.selectOption(data.gameEngine)
+        await this.locators.appStoreLinkInput.pressSequentially(data.appStoreLink)
+
+        await this.locators.suffixSelect.selectOption(data.suffix)
+        await this.locators.howDidYouHearSelect.selectOption(data.howDidYouHear)
 
         await this.locators.publishersTermsCheckbox.check()
-        await this.locators.privacyConsentCheckbox.check()
         await this.locators.updatesConsentCheckbox.check()
+        // await this.locators.privacyConsentCheckbox.check()
     }
 
     async submit() {
         await this.locators.submitButton.click()
+    }
+
+    async checkSubmitError() {
+        await this.locators.requiredErrorMessageText.waitFor({ state: 'visible', timeout: 10_000 })
+        await expect(this.locators.requiredErrorMessageText).toBeVisible()
+        await expect(this.locators.requiredErrorMessageText).toHaveText('Please complete this required field.')
+
+        const errorColor = await this.locators.requiredErrorMessageText.evaluate((el) => window.getComputedStyle(el).color)
+        await expect(errorColor).toBe('rgb(242, 84, 91)')
     }
 }
