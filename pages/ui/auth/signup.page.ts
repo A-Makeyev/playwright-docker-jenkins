@@ -56,12 +56,12 @@ export class SignupPage {
         await this.page.goto('/sign-up')
     }
 
-    async closeCookiePopup({ page }) {
+    async closeCookiePopup() {
         const popup = this.locators.cookiesWindow
         const isPopupPresent = await popup.evaluate(el => el !== null)
 
         if (isPopupPresent) {
-            await page.waitForTimeout(1000)
+            await this.page.waitForTimeout(1000)
             await this.locators.rejectCookiesButton.click()
             await Promise.race([
                 this.locators.cookiesWindow.waitFor({ state: 'hidden', timeout: 5000 }),
