@@ -17,6 +17,9 @@ bunx allure open allure-report
 ### Create jenkins image
 docker-compose up -d
 
+### Start jenkins
+docker-compose start
+
 ### Open jenkins
 http://localhost:8080
 
@@ -46,7 +49,7 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
 3) Content type -> application/x-www-form-urlencoded
 
 ## Quick commands (cmd)
-docker-compose up -d && ngrok start jenkins
+docker-compose start && ngrok start jenkins
 git add . && git commit -m "update <%DATE% %TIME:~0,8%>" && git push
 
 
