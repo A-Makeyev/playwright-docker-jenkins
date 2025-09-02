@@ -70,35 +70,34 @@ pipeline {
         //     }
         // }
 
-        stage('Run Tests') {
-            stage('UI Test') {
-                steps {
-                    sh '''
-                        export PATH=$BUN_INSTALL/bin:$PATH
-                        export HOME=/root
-                        bun run test:ui
-                    '''
-                }
-            }
 
-            stage('API Test') {
-                steps {
-                    sh '''
-                        export PATH=$BUN_INSTALL/bin:$PATH
-                        export HOME=/root
-                        bun run test:api
-                    '''
-                }
+        stage('UI Test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bun run test:ui
+                '''
             }
+        }
 
-            stage('Concurrent Test') {
-                steps {
-                    sh '''
-                        export PATH=$BUN_INSTALL/bin:$PATH
-                        export HOME=/root
-                        bun run test --workers=10
-                    '''
-                }
+        stage('API Test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bun run test:api
+                '''
+            }
+        }
+
+        stage('Concurrent Test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bun run test --workers=10
+                '''
             }
         }
 
