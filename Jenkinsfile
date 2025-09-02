@@ -43,30 +43,30 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test
+                            bun run test:ui
                         '''
                     }
                 }
 
-                // stage('Server') {
-                //     steps {
-                //         sh '''
-                //             export PATH=$BUN_INSTALL/bin:$PATH
-                //             export HOME=/root
-                //             bun run test:api
-                //         '''
-                //     }
-                // }   
+                stage('Server') {
+                    steps {
+                        sh '''
+                            export PATH=$BUN_INSTALL/bin:$PATH
+                            export HOME=/root
+                            bun run test:api
+                        '''
+                    }
+                }   
 
-                // stage('Concurrent') {
-                //     steps {
-                //         sh '''
-                //             export PATH=$BUN_INSTALL/bin:$PATH
-                //             export HOME=/root
-                //             bun run test --workers=5
-                //         '''
-                //     }
-                // }
+                stage('Concurrent') {
+                    steps {
+                        sh '''
+                            export PATH=$BUN_INSTALL/bin:$PATH
+                            export HOME=/root
+                            bun run test --workers=2
+                        '''
+                    }
+                }
             }
         }
 
