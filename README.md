@@ -3,7 +3,7 @@
 
 ## Run commands
 ```
-    run all tests -> bunx playwright test
+    run all tests with xml results -> bunx playwright test
     run api sanity test -> bunx playwright test tests/api/home/sanity.spec.ts
     run ui signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
 ```

@@ -76,7 +76,6 @@ pipeline {
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
                     bunx allure generate allure-results --clean -o allure-report
-                    bunx allure open allure-report
                 '''
             }
         }
