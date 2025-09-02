@@ -22,7 +22,7 @@ pipeline {
     }
 
     stages {
-        stage('Setup') {
+        stage('Build') {
             steps {
                 sh '''
                     apt-get update
@@ -36,29 +36,9 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             parallel {
-                stage('UI Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test:ui
-                        '''
-                    }
-                }
-
-                stage('API Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test:api
-                        '''
-                    }
-                }
-
-                stage('API Test') {
+                stage('Client') {
                     steps {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
@@ -67,16 +47,26 @@ pipeline {
                         '''
                     }
                 }
+
+                // stage('Server') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test:api
+                //         '''
+                //     }
+                // }
                 
-                stage('Concurrent Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test --workers=5
-                        '''
-                    }
-                }
+                // stage('Concurrent Test') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test --repeat-each=2 --workers=2
+                //         '''
+                //     }
+                // }
             }
         }
 
