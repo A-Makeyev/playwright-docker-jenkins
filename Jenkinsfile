@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user root'
+            args '--ipc=host --user 1000:1000' // Adjust to Jenkins user ID (e.g., 1000:1000)
             reuseNode true
         }
     }
@@ -15,6 +15,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm 
+            }
+        }
+
         stage('Setup') {
             steps {
                 sh '''
@@ -88,10 +94,7 @@ pipeline {
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
-            node('') {
-                cleanWs()
-                sh 'docker rm -f $(docker ps -aq -f "ancestor=mcr.microsoft.com/playwright:v1.55.0-noble") || true'
-            }
+            cleanWs()
         }
     }
 }
