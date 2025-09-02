@@ -16,7 +16,6 @@ export default defineConfig({
     use: {
         baseURL: 'https://www.anzu.io',
         headless: !!process.env.CI,
-        viewport: null,
         trace: 'on-first-retry',
         video: 'retain-on-failure',
         screenshot: 'only-on-failure',
