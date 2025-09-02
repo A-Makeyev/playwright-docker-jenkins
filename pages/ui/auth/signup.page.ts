@@ -94,7 +94,7 @@ export class SignupPage {
         if (data.isGameLive) {
             await this.locators.isGameLiveSelect.selectOption(data.isGameLive)
         }
-        
+
         await this.locators.domainNameInput.pressSequentially(data.domainName)
         await this.locators.gameEngineSelect.selectOption(data.gameEngine)
         await this.locators.appStoreLinkInput.pressSequentially(data.appStoreLink)
@@ -113,10 +113,10 @@ export class SignupPage {
 
     async checkSubmitError() {
         await this.locators.requiredErrorMessageText.waitFor({ state: 'visible', timeout: 10_000 })
-        await expect(this.locators.requiredErrorMessageText).toBeVisible()
-        await expect(this.locators.requiredErrorMessageText).toHaveText('Please complete this required field.')
+        expect(this.locators.requiredErrorMessageText).toBeVisible()
+        expect(this.locators.requiredErrorMessageText).toHaveText('Please complete this required field.')
 
         const errorColor = await this.locators.requiredErrorMessageText.evaluate((el) => window.getComputedStyle(el).color)
-        await expect(errorColor).toBe('rgb(242, 84, 91)')
+        expect(errorColor).toBe('rgb(242, 84, 91)')
     }
 }

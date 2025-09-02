@@ -1,12 +1,14 @@
 {
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.3.0",
     "allure-commandline": "^2.34.1",
     "allure-playwright": "^3.3.3"
   },
-    "scripts": {
+  "scripts": {
     "test": "bunx playwright test",
     "test:ui": "bunx playwright test tests/ui",
     "test:api": "bunx playwright test tests/api",

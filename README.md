@@ -3,9 +3,13 @@
 
 ## Run commands
 ```
-    run all tests with xml results -> bunx playwright test
-    run api sanity test -> bunx playwright test tests/api/home/sanity.spec.ts
-    run ui signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
+    API
+    sanity test -> bunx playwright test tests/api/home/sanity.spec.ts
+    login test -> bunx playwright test tests/api/auth/login.spec.ts --project=chromium --workers=1
+
+    UI
+    all tests -> bunx playwright test
+    signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
 ```
 
 ## Open allure report

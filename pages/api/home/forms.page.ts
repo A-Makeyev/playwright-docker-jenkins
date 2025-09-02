@@ -22,9 +22,8 @@ export class Forms {
             const data: HomeSettingsFormData = await response.json()
             expect(data).toHaveProperty('form.portalId')
             
-            // console.log(data.form.formFieldGroups[0].fields)
             return data
-        } catch (error) {
+        } catch (error: any) {
             throw new Error(`Failed to fetch form data: ${error.message}`)
         }
     }

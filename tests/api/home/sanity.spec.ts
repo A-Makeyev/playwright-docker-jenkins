@@ -17,16 +17,16 @@ test.describe('Home settings form data', () => {
     let fields: HomeSettingsFormData['form']['formFieldGroups'][0]['fields']
 
     test.beforeAll(async ({ request }) => {
-      forms = new Forms(request)
+        forms = new Forms(request)
 
-      try {
-        data = await forms.getFormData()
-        expect(data.form.formFieldGroups[0]).toBeDefined()
-        fields = data.form.formFieldGroups[0].fields
-      } catch (error) {
-        throw new Error(`Failed to fetch form data: ${error.message}`)
-      }
-  })
+        try {
+            data = await forms.getFormData()
+            expect(data.form.formFieldGroups[0]).toBeDefined()
+            fields = data.form.formFieldGroups[0].fields
+        } catch (error) {
+            throw new Error(`Failed to fetch form data: ${error.message}`)
+        }
+    })
 
   test('Actual portalId & guid should match expected portalId & expected guid', async () => {
       expect(data.form.portalId).toBe(expectedPortalId)

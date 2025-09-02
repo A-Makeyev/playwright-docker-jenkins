@@ -19,6 +19,9 @@ pipeline {
         HOME = "${WORKSPACE}"
         BUN_INSTALL = "/root/.bun"
         PATH = "${BUN_INSTALL}/bin:${PATH}"
+        AUTH_URL = credentials('auth_url')
+        AUTH_WRONG_USERNAME = credentials('auth_wrong_username')
+        AUTH_WRONG_PASSWORD = credentials('auth_wrong_password')
     }
 
     stages {
