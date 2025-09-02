@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.55.0-noble'
-            args '--ipc=host --user 1000:1000' // Adjust to Jenkins user ID (e.g., 1000:1000)
+            args '--ipc=host --user root'
             reuseNode true
         }
     }
@@ -15,12 +15,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm 
-            }
-        }
-
         stage('Setup') {
             steps {
                 sh '''
@@ -42,7 +36,7 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:ui || { echo "UI tests failed"; exit 1; }
+                            bun run test:ui
                         '''
                     }
                 }
@@ -52,7 +46,7 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:api || { echo "API tests failed"; exit 1; }
+                            bun run test:api
                         '''
                     }
                 }
@@ -62,17 +56,9 @@ pipeline {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test --repeat-each=2 --workers=2 || { echo "Concurrent tests failed"; exit 1; }
+                            bun run test --repeat-each=2 --workers=2
                         '''
                     }
-                }
-            }
-            post {
-                always {
-                    sh '''
-                        echo "Workspace: $WORKSPACE"
-                        ls -l test-results/ || echo "No test-results directory found"
-                    '''
                 }
             }
         }
