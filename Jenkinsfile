@@ -77,7 +77,6 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/*.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
