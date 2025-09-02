@@ -10,7 +10,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(
             artifactNumToKeepStr: '5',
-            numToKeepStr: '10'
+            numToKeepStr: '5'
         ))
     }
 
@@ -36,57 +36,37 @@ pipeline {
             }
         }
 
-        // stage('Run Tests') {
-        //     parallel {
-        //         stage('UI Test') {
-        //             steps {
-        //                 sh '''
-        //                     export PATH=$BUN_INSTALL/bin:$PATH
-        //                     export HOME=/root
-        //                     bun run test:ui
-        //                 '''
-        //             }
-        //         }
+        stage('Run Tests') {
+            parallel {
+                stage('UI Test') {
+                    steps {
+                        sh '''
+                            export PATH=$BUN_INSTALL/bin:$PATH
+                            export HOME=/root
+                            bun run test:ui
+                        '''
+                    }
+                }
 
-        //         stage('API Test') {
-        //             steps {
-        //                 sh '''
-        //                     export PATH=$BUN_INSTALL/bin:$PATH
-        //                     export HOME=/root
-        //                     bun run test:api
-        //                 '''
-        //             }
-        //         }
+                stage('API Test') {
+                    steps {
+                        sh '''
+                            export PATH=$BUN_INSTALL/bin:$PATH
+                            export HOME=/root
+                            bun run test:api
+                        '''
+                    }
+                }
                 
-        //         // stage('Concurrent Test') {
-        //         //     steps {
-        //         //         sh '''
-        //         //             export PATH=$BUN_INSTALL/bin:$PATH
-        //         //             export HOME=/root
-        //         //             bun run test --repeat-each=2 --workers=2
-        //         //         '''
-        //         //     }
-        //         // }
-        //     }
-        // }
-
-        stage('UI Test') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bun run test:ui
-                '''
-            }
-        }
-
-        stage('API Test') {
-            steps {
-                sh '''
-                    export PATH=$BUN_INSTALL/bin:$PATH
-                    export HOME=/root
-                    bun run test:api
-                '''
+                // stage('Concurrent Test') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test --repeat-each=2 --workers=2
+                //         '''
+                //     }
+                // }
             }
         }
 
@@ -95,7 +75,7 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
-                    bunx allure generate allure-results --clean -o allure-report
+                    bun run report:generate
                 '''
             }
         }
@@ -103,7 +83,7 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/*.xml'
+            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/**/*.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
