@@ -23,9 +23,9 @@ export default defineConfig({
     },
 
     reporter: [
-        ['list'], 
-        ['junit', { outputFile: 'test-results/results.xml' }], 
-        ['allure', { outputFolder: 'allure-results' }], 
+        ['list'],
+        ['junit', { outputFile: 'test-results/results.xml' }],
+        ['allure-playwright', { outputFolder: 'allure-results' }],
     ],
     
     projects: [

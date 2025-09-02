@@ -8,8 +8,13 @@ pipeline {
     }
 
     options {
-		buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
-	}
+        buildDiscarder(logRotator(
+            daysToKeepStr: '30',   // delete builds older than 30 days
+            numToKeepStr: '10',    // keep only 10 latest builds
+            artifactDaysToKeepStr: '7',  // delete artifacts older than 7 days
+            artifactNumToKeepStr: '5'    // keep artifacts only for last 5 builds
+        ))
+    }
 
     environment {
         CI = 'true'
