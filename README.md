@@ -53,14 +53,14 @@ git add . && git commit -m "update <%DATE% %TIME:~0,8%>" && git push
 ## Clean
 ```
 To remove dangling images:
-$ docker system prune
+docker system prune
 
 To remove dangling as well as unused images:
-$ docker system prune --all
+docker system prune --all
 
 To prune volumes:
-$ docker system prune --volumes
+docker system prune --volumes
 
 To prune the universe:
-$ docker system prune --force --all --volumes
+docker system prune --force --all --volumes
 ```

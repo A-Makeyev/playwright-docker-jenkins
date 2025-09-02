@@ -22,7 +22,7 @@ pipeline {
     }
 
     stages {
-        stage('Setup') {
+        stage('Build') {
             steps {
                 sh '''
                     apt-get update
@@ -36,34 +36,34 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             parallel {
-                stage('UI Test') {
+                stage('Client') {
                     steps {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:ui
+                            bun run test
                         '''
                     }
                 }
 
-                stage('API Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test:api
-                        '''
-                    }
-                }
-                
-                // stage('Concurrent Test') {
+                // stage('Server') {
                 //     steps {
                 //         sh '''
                 //             export PATH=$BUN_INSTALL/bin:$PATH
                 //             export HOME=/root
-                //             bun run test --repeat-each=2 --workers=2
+                //             bun run test:api
+                //         '''
+                //     }
+                // }   
+
+                // stage('Concurrent') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test --workers=2
                 //         '''
                 //     }
                 // }
