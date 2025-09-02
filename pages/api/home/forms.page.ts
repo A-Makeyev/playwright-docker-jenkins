@@ -5,10 +5,12 @@ import { HomeSettingsFormData } from '../../../utils/api/types/homeSettingsForm'
 export class Forms {
     constructor(
         private readonly request: APIRequestContext,
-        private readonly portalId: number = 19825781,
-        private readonly appVersion: string = '1.9606',
-        private readonly guid: string = 'f1484f40-ad7d-404d-a404-c8d90c3edd1b',
+
     ) {}
+
+    private readonly portalId: number = 19825781
+    private readonly appVersion: string = '1.9606'
+    private readonly guid: string = 'f1484f40-ad7d-404d-a404-c8d90c3edd1b'
 
     private getFormUrl(): string {
         return `/_hcms/forms/embed/v3/form/${this.portalId}/${this.guid}/json?hs_static_app=forms-embed&hs_static_app_version=${this.appVersion}&X-HubSpot-Static-App-Info=forms-embed-${this.appVersion}`

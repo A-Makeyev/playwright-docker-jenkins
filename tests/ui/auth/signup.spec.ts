@@ -1,16 +1,13 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { SignupPage } from '../../../pages/ui/auth/signup.page'
 
 
 test.describe('Signup form', () => {
-    let signupPage: SignupPage
-
-    test.beforeEach(async ({ page }) => {
-        signupPage = new SignupPage(page)
-        await signupPage.goto()
-    })
-
     test('New customer submission', async ({ page }) => {
+        let signupPage: SignupPage
+        signupPage = new SignupPage(page)
+
+        await signupPage.goto()
         await signupPage.closeCookiePopup()
         await signupPage.fillForm({
             firstname: 'Anatoly',
@@ -28,6 +25,7 @@ test.describe('Signup form', () => {
         })
 
         await signupPage.submit()
+        await page.waitForTimeout(1000)
         await signupPage.checkSubmitError()
     })
 })
