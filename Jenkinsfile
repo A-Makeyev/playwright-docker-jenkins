@@ -38,6 +38,16 @@ pipeline {
 
         stage('Run Tests') {
             parallel {
+                stage('Concurrent Test') {
+                    steps {
+                        sh '''
+                            export PATH=$BUN_INSTALL/bin:$PATH
+                            export HOME=/root
+                            bun run test --workers=5
+                        '''
+                    }
+                }
+
                 stage('UI Test') {
                     steps {
                         sh '''
@@ -54,16 +64,6 @@ pipeline {
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
                             bun run test:api
-                        '''
-                    }
-                }
-                
-                stage('Concurrent Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test --workers=5
                         '''
                     }
                 }
