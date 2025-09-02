@@ -38,22 +38,32 @@ pipeline {
 
         stage('Run Tests') {
             parallel {
-                stage('UI Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test:ui
-                        '''
-                    }
-                }
+                // stage('UI Test') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test:ui
+                //         '''
+                //     }
+                // }
+
+                // stage('API Test') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test:api
+                //         '''
+                //     }
+                // }
 
                 stage('API Test') {
                     steps {
                         sh '''
                             export PATH=$BUN_INSTALL/bin:$PATH
                             export HOME=/root
-                            bun run test:api
+                            bun run test
                         '''
                     }
                 }
@@ -83,7 +93,7 @@ pipeline {
 
     post {
         always {
-            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/**/*.xml'
+            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/*.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
