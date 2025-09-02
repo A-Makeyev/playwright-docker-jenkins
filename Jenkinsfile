@@ -9,10 +9,8 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(
-            daysToKeepStr: '30',   // delete builds older than 30 days
-            numToKeepStr: '10',    // keep only 10 latest builds
-            artifactDaysToKeepStr: '7',  // delete artifacts older than 7 days
-            artifactNumToKeepStr: '5'    // keep artifacts only for last 5 builds
+            artifactNumToKeepStr: '5',
+            numToKeepStr: '10'
         ))
     }
 
@@ -77,7 +75,8 @@ pipeline {
                 sh '''
                     export PATH=$BUN_INSTALL/bin:$PATH
                     bun --version || { echo "Bun not found"; exit 1; }
-                    bunx allure generate allure-results --clean -o allure-report || true
+                    bunx allure generate allure-results --clean -o allure-report
+                    bunx allure open allure-report
                 '''
             }
         }

@@ -1,6 +1,19 @@
 # Playwright Docker Jenkins
 [GitHub Repository](https://github.com/A-Makeyev/playwright-docker-jenkins)
 
+## Run commands
+```
+    run all tests -> bunx playwright test
+    run api sanity test -> bunx playwright test tests/api/home/sanity.spec.ts
+    run ui signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
+```
+
+## Open allure report
+```
+bunx allure generate allure-results --clean -o allure-report
+bunx allure open allure-report
+```
+
 ### Create jenkins image
 docker-compose up -d
 
