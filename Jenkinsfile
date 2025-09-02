@@ -7,6 +7,10 @@ pipeline {
         }
     }
 
+    options {
+		buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
+	}
+
     environment {
         CI = 'true'
         HOME = "${WORKSPACE}"
@@ -76,6 +80,7 @@ pipeline {
 
     post {
         always {
+            junit allowEmptyResults: true, skipPublishingChecks: true, testResults: 'test-results/*.xml'
             archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
         }
         cleanup {
