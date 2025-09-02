@@ -22,7 +22,7 @@ pipeline {
     }
 
     stages {
-        stage('Setup') {
+        stage('Build') {
             steps {
                 sh '''
                     apt-get update
@@ -70,6 +70,15 @@ pipeline {
         //     }
         // }
 
+        stage('Concurrent Test') {
+            steps {
+                sh '''
+                    export PATH=$BUN_INSTALL/bin:$PATH
+                    export HOME=/root
+                    bun run test
+                '''
+            }
+        }
 
         stage('UI Test') {
             steps {
