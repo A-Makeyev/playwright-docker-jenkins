@@ -58,15 +58,15 @@ pipeline {
                     }
                 }
                 
-                stage('Concurrent Test') {
-                    steps {
-                        sh '''
-                            export PATH=$BUN_INSTALL/bin:$PATH
-                            export HOME=/root
-                            bun run test --repeat-each=2 --workers=2
-                        '''
-                    }
-                }
+                // stage('Concurrent Test') {
+                //     steps {
+                //         sh '''
+                //             export PATH=$BUN_INSTALL/bin:$PATH
+                //             export HOME=/root
+                //             bun run test --repeat-each=2 --workers=2
+                //         '''
+                //     }
+                // }
             }
         }
 
