@@ -48,3 +48,19 @@ docker exec jenkins-docker-example cat /var/jenkins_home/secrets/initialAdminPas
 ## Quick commands (cmd)
 docker-compose up -d && ngrok start jenkins
 git add . && git commit -m "update <%DATE% %TIME:~0,8%>" && git push
+
+
+## Clean
+```
+To remove dangling images:
+$ docker system prune
+
+To remove dangling as well as unused images:
+$ docker system prune --all
+
+To prune volumes:
+$ docker system prune --volumes
+
+To prune the universe:
+$ docker system prune --force --all --volumes
+```
