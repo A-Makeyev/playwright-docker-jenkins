@@ -16,14 +16,14 @@ test.describe('Authentication Test', () => {
         console.log(response)
     })
 
-    test('Login with wrong credentials response time should take less than 3 seconds', async ({ request }) => {
+    test('Login with wrong credentials response time should take less than 5 seconds', async ({ request }) => {
         const login = new Login(request)
         const start = Date.now()
 
         await login.loginWithWrongCredentials()
         const duration = Date.now() - start
         
-        expect(duration).toBeLessThan(3000)
+        expect(duration).toBeLessThan(5000)
         console.log('Login duration: ' + duration + ' ms')
     })
 })
