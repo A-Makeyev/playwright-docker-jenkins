@@ -11,12 +11,14 @@ bunx playwright install
 ## Run commands
 ```
     API
-    sanity test -> bunx playwright test tests/api/home/sanity.spec.ts --workers=1
-    login test -> bunx playwright test tests/api/auth/login.spec.ts --project=chromium 
+    sanity test -> bunx playwright test tests/api/home/sanity.spec.ts 
+    login test -> bunx playwright test tests/api/auth/login.spec.ts --workers=1
 
     UI
-    all tests -> bunx playwright test
     signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
+
+    CONCURRENT 
+    all tests -> bunx playwright test
 ```
 
 ## Open allure report
