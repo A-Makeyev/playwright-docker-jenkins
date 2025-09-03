@@ -1,7 +1,7 @@
 # Playwright Docker Jenkins
 [GitHub Repository](https://github.com/A-Makeyev/playwright-docker-jenkins)
 
-## Installation
+### Installation
 ```
 npm i bun
 bun install
@@ -12,7 +12,7 @@ bunx playwright install
 ```
     API
     sanity test -> bunx playwright test tests/api/home/sanity.spec.ts 
-    login test -> bunx playwright test tests/api/auth/login.spec.ts --workers=1
+    login test -> bunx playwright test tests/api/auth/login.spec.ts --project=firefox --workers=1
 
     UI
     signup test -> bunx playwright test tests/ui/auth/signup.spec.ts --project=chromium
