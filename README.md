@@ -1,7 +1,7 @@
 # Playwright Docker Jenkins
 [GitHub Repository](https://github.com/A-Makeyev/playwright-docker-jenkins)
 
-### Installation
+## Installation
 ```
 npm i bun
 bun install
